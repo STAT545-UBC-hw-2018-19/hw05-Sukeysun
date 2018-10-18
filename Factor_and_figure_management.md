@@ -509,7 +509,7 @@ rangeplt.new <- range_captia %>%
          )
 
   
-grid.arrange( top=textGrob( "Spread of GDP per capita within the continents",
+graph <- grid.arrange( top=textGrob( "Spread of GDP per capita within the continents",
                             gp=gpar( fontsize = 22,font = 8 ) ),
               
               tableGrob( range_captia,
@@ -565,25 +565,13 @@ write figure
 ------------
 
 ``` r
-graph <- grid.arrange( top=textGrob( "Spread of GDP per capita within the continents",
-                            gp=gpar( fontsize = 22,font = 8 ) ),
-              
-              tableGrob( range_captia,
-                         theme = myt,
-                         rows = NULL),
-             spreadplt.new,
-             rangeplt.new,
-             nrow = 2)
-```
-
-![](Factor_and_figure_management_files/figure-markdown_github/writing%20figures%20to%20file-1.png)
-
-``` r
-ggsave("graph.png", graph, width=100, height=80, units = "cm")
+ggsave("graph.png", graph, width=50, height=30, units = "cm")
 ```
 
 load figure
 -----------
+
+![](https://github.com/STAT545-UBC-students/hw05-Sukeysun/blob/master/graph.png)
 
 But I want to do more!
 ======================
