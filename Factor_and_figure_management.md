@@ -20,6 +20,9 @@ October 11, 2018
     -   [write figure](#write-figure)
     -   [load figure](#load-figure)
 -   [But I want to do more!](#but-i-want-to-do-more)
+    -   [fct\_anon](#fct_anon)
+    -   [fct\_collapse](#fct_collapse)
+    -   [fct\_infreq](#fct_infreq)
 
 Part 1: Factor management
 =========================
@@ -548,7 +551,7 @@ plotly
 ------
 
 ``` r
-# ggplotly(spreadplt.new)
+#ggplotly(spreadplt.new)
 ```
 
 ggplotly() can:
@@ -557,6 +560,8 @@ ggplotly() can:
 -   show the statistics summary of boxplot
 -   can download the plot as png
 -   [more details could be found here](https://plot.ly/r/)
+
+**the output of ggplotly() is only suitable for html file, so I commented `ggplotly(spreadplt.new)` here**
 
 Part 4: Writing figures to file
 ===============================
@@ -576,84 +581,25 @@ load figure
 But I want to do more!
 ======================
 
+I would like to create an excerpt of the Gapminder data and add a "language" column to the new data.
+
 ``` r
 country_language <- 
   data.frame(
-  country = c("Afghanistan","Italy", "Germany", "Japan","Spain","Portugal"),
-  language = c("Dari Persian","Italian","German","Japanese","Spanish","Portuguese")
+  country = c("Afghanistan","Italy", "Australia","Germany", "Japan","Spain", "Mexico","Portugal"),
+  language = c("Dari Persian","Italian","German","German","Japanese","Spanish","Spanish","Portuguese")
 ) 
+
 sub_gapminder <- gapminder %>%
-  filter( country %in% c("Afghanistan","Italy", "Germany", "Japan","Spain","Portugal") ) 
-
-subgapminder.add.language <- left_join(sub_gapminder,country_language)
-```
-
-    ## Joining, by = "country"
-
-    ## Warning: Column `country` joining factors with different levels, coercing
-    ## to character vector
-
-``` r
-## check the structure of subgapminder.add.language
-data.frame( variable = names( subgapminder.add.language ),
-           classes = sapply( subgapminder.add.language, class ),
-           factorlevel = sapply( subgapminder.add.language, nlevels ),
-           first_values = sapply( subgapminder.add.language, function( x ) paste0( head( x ),  collapse = ", ") ),
-           row.names = NULL ) %>% 
-  kable()
-```
-
-| variable  | classes   |  factorlevel| first\_values                                                                      |
-|:----------|:----------|------------:|:-----------------------------------------------------------------------------------|
-| country   | character |            0| Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan       |
-| continent | factor    |            5| Asia, Asia, Asia, Asia, Asia, Asia                                                 |
-| year      | integer   |            0| 1952, 1957, 1962, 1967, 1972, 1977                                                 |
-| lifeExp   | numeric   |            0| 28.801, 30.332, 31.997, 34.02, 36.088, 38.438                                      |
-| pop       | integer   |            0| 8425333, 9240934, 10267083, 11537966, 13079460, 14880372                           |
-| gdpPercap | numeric   |            0| 779.4453145, 820.8530296, 853.10071, 836.1971382, 739.9811058, 786.11336           |
-| language  | factor    |            6| Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian |
-
-Country is character now. But we can make sure that both factors have the same levels before merging:
-
-``` r
-combined <- sort( union(levels(sub_gapminder$country), levels(country_language$country ) ) )
-
-new.subgapminder.add.language<- left_join(
-  mutate( sub_gapminder, country = factor( country, levels = combined ) ),
-  mutate( country_language, country = factor( country, levels = combined ) )
-  )
-```
-
-    ## Joining, by = "country"
-
-``` r
-## check the structure of new.subgapminder.add.language
-data.frame( variable = names( new.subgapminder.add.language ),
-           classes = sapply( new.subgapminder.add.language, class ),
-           factorlevel = sapply( new.subgapminder.add.language, nlevels ),
-           first_values = sapply( new.subgapminder.add.language, function( x ) paste0( head( x ),  collapse = ", ") ),
-           row.names = NULL ) %>% 
-  kable()
-```
-
-| variable  | classes |  factorlevel| first\_values                                                                      |
-|:----------|:--------|------------:|:-----------------------------------------------------------------------------------|
-| country   | factor  |          142| Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan       |
-| continent | factor  |            5| Asia, Asia, Asia, Asia, Asia, Asia                                                 |
-| year      | integer |            0| 1952, 1957, 1962, 1967, 1972, 1977                                                 |
-| lifeExp   | numeric |            0| 28.801, 30.332, 31.997, 34.02, 36.088, 38.438                                      |
-| pop       | integer |            0| 8425333, 9240934, 10267083, 11537966, 13079460, 14880372                           |
-| gdpPercap | numeric |            0| 779.4453145, 820.8530296, 853.10071, 836.1971382, 739.9811058, 786.11336           |
-| language  | factor  |            6| Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian |
-
-Now country is a factor with 142 levels, but we only have 6 levels.
-
-``` r
-sub_gapminder <- gapminder %>%
-  filter( country %in% c("Afghanistan","Italy", "Germany", "Japan","Spain","Portugal") ) %>% 
+  filter( country%in% c("Afghanistan","Italy", "Australia","Germany", "Japan","Spain", "Mexico","Portugal") ) %>% 
   droplevels()
 
-subgapminder.add.language <- left_join(sub_gapminder,country_language)
+# subgapminder.add.language <- gapminder %>%
+#   left_join ( country_language, by = "country" ) %>% 
+#   filter( language!= "NA") %>% 
+#   droplevels()
+
+subgapminder.add.language <- left_join( sub_gapminder, country_language)
 ```
 
     ## Joining, by = "country"
@@ -663,17 +609,94 @@ subgapminder.add.language <- left_join(sub_gapminder,country_language)
 data.frame( variable = names( subgapminder.add.language ),
            classes = sapply( subgapminder.add.language, class ),
            factorlevel = sapply( subgapminder.add.language, nlevels ),
-           first_values = sapply( subgapminder.add.language, function( x ) paste0( head( x ),  collapse = ", ") ),
+           #first_values = sapply( subgapminder.add.language, function( x ) paste0( head( x ),  collapse = ", ") ),
            row.names = NULL ) %>% 
   kable()
 ```
 
-| variable  | classes |  factorlevel| first\_values                                                                      |
-|:----------|:--------|------------:|:-----------------------------------------------------------------------------------|
-| country   | factor  |            6| Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghanistan       |
-| continent | factor  |            2| Asia, Asia, Asia, Asia, Asia, Asia                                                 |
-| year      | integer |            0| 1952, 1957, 1962, 1967, 1972, 1977                                                 |
-| lifeExp   | numeric |            0| 28.801, 30.332, 31.997, 34.02, 36.088, 38.438                                      |
-| pop       | integer |            0| 8425333, 9240934, 10267083, 11537966, 13079460, 14880372                           |
-| gdpPercap | numeric |            0| 779.4453145, 820.8530296, 853.10071, 836.1971382, 739.9811058, 786.11336           |
-| language  | factor  |            6| Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian, Dari Persian |
+| variable  | classes |  factorlevel|
+|:----------|:--------|------------:|
+| country   | factor  |            8|
+| continent | factor  |            4|
+| year      | integer |            0|
+| lifeExp   | numeric |            0|
+| pop       | integer |            0|
+| gdpPercap | numeric |            0|
+| language  | factor  |            6|
+
+fct\_anon
+---------
+
+I would like to replaces factor levels of "language" with arbitary numeric identifiers.
+
+``` r
+original_fct <- fct_count( subgapminder.add.language$language )
+new_fct <- subgapminder.add.language$language %>% 
+  fct_anon( "x" ) %>%  ## add "x" before the numeric identifiers
+  fct_count()
+
+grid.arrange(
+             tableGrob(original_fct,
+                       theme = myt,
+                       rows = NULL),
+             tableGrob(new_fct,
+                       theme = myt,
+                       rows = NULL),
+                       nrow = 1)
+```
+
+![](Factor_and_figure_management_files/figure-markdown_github/Replaces%20factor%20levels%20with%20arbitary%20numeric%20identifiers-1.png) Now the languages are replaced by x1,x2...
+
+fct\_collapse
+-------------
+
+This function can collapse factor levels into manually defined groups. Since countries are from different continents, I would like to define a new factors group according to the continents.
+
+``` r
+## first, look at what languages are in each continent.
+language_continent <- subgapminder.add.language %>% 
+  group_by( continent ) %>% 
+  select ( continent, language) %>% 
+  unique()
+
+language2 <- fct_collapse( subgapminder.add.language$language,
+  language.only.in.Asia = c( "Dari Persian", "Japanese" ),
+  used.in.more.continents = c( "German", "Spanish"),
+  language.only.inEurope = c( "Italian", "Portuguese")
+) %>% 
+  fct_count()
+
+grid.arrange(
+             tableGrob(language_continent,
+                       theme = myt,
+                       rows = NULL),
+             tableGrob(original_fct,
+                       theme = myt,
+                       rows = NULL),
+             tableGrob(language2,
+                       theme = myt,
+                       rows = NULL),
+                       nrow = 1)
+```
+
+![](Factor_and_figure_management_files/figure-markdown_github/define%20new%20froup-1.png) The first table shows the languages used in continents, the second table shows the original output and the third one shows the output after collapsing factor levels into manually defined groups.
+
+fct\_infreq
+-----------
+
+This function can reorder factors levels by frequency. I would like to reorder the factors levels of subgapminder.add.language$language
+
+``` r
+reorder_fct <- fct_infreq( subgapminder.add.language$language ) %>% 
+  fct_count()
+grid.arrange(
+             tableGrob(original_fct,
+                       theme = myt,
+                       rows = NULL),
+             tableGrob(reorder_fct,
+                       theme = myt,
+                       rows = NULL),
+                       nrow = 1)
+```
+
+![](Factor_and_figure_management_files/figure-markdown_github/reorder%20the%20factors%20levels%20according%20to%20frequency-1.png)
